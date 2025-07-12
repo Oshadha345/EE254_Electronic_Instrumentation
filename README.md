@@ -172,6 +172,8 @@ Contributions make the open-source community an amazing place to learn, inspire,
 
 This project is licensed under the MIT License. See the `LICENSE` file for more information.
 
+---
+
 <div align="center">
         <img src="https://raw.githubusercontent.com/Oshadha345/Oshadha345/main/assets/footer-border.gif" width="100%" alt="Footer Border">
         <br>

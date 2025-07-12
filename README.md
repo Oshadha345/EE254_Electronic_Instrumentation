@@ -20,7 +20,8 @@ This repository contains all materials related to the EE254 Electronic Instrumen
   - [⚙️ Setup Instructions](#️-setup-instructions)
     - [Multisim Setup](#multisim-setup)
     - [Octave Setup](#octave-setup)
-  - [🧪 Laboratory Work](#-laboratory-work)
+  - [Course Labs](#course-labs)
+  - [🧪 Self-Study Labs](#-self-study-labs)
   - [💻 Simulations](#-simulations)
     - [Multisim Simulations](#multisim-simulations)
     - [Octave Simulations](#octave-simulations)
@@ -67,15 +68,37 @@ EE254_Electronic_Instrumentation/
 1. Download and install [GNU Octave](https://www.gnu.org/software/octave/download)
 2. Run `.m` files from the `simulations/octave` directory
 
-## 🧪 Laboratory Work
+## Course Labs
+This course includes a series of structured laboratory experiments designed to reinforce theoretical concepts through practical application. Each lab is documented with objectives, procedures, and analysis questions to guide students through the learning process.
 
-The `labs` directory contains structured laboratory exercises covering:
-- Basic electrical measurements
-- Signal conditioning circuits
-- Sensor interfacing
-- Data acquisition systems
-- Instrumentation amplifiers
-- Filter design and implementation
+- Lab 01 : Characteristics of an Op-Amp
+- Lab 02 : Application of Op-Amps I  -> Inverting Amplifier, Non-Inverting Amplifier, Differential Amplifier
+- Lab 03 : Application of Op-Amps II -> Summing Amplifier, Integrator, Differentiator
+  
+## 🧪 Self-Study Labs
+
+These self-study labs are designed to be completed using Multisim for simulation and Octave for analysis. They build upon the foundational op-amp concepts and explore advanced topics in signal conditioning, data conversion, and acquisition systems.
+
+- **Lab 04: Active Filters**
+    - Design and simulate active filters (Low-pass, High-pass, Band-pass) using op-amps. Analyze their frequency response in Multisim and verify with Octave.
+
+- **Lab 05: Instrumentation Amplifiers**
+    - Construct a classic three-op-amp instrumentation amplifier. Investigate its high Common-Mode Rejection Ratio (CMRR) and its application in amplifying small differential signals from sensors.
+
+- **Lab 06: Oscillators and Waveform Generators**
+    - Design and simulate various oscillator circuits, such as Wien bridge (sine wave) and astable multivibrator (square/triangle wave) circuits using op-amps.
+
+- **Lab 07: Sensor Signal Conditioning**
+    - Interface a simulated sensor (e.g., a temperature sensor or a strain gauge bridge) with a signal conditioning circuit. This includes amplification, filtering, and level shifting to prepare the signal for data conversion.
+
+- **Lab 08: Analog-to-Digital Conversion (ADC)**
+    - Simulate a fundamental ADC architecture, such as a flash ADC or a successive-approximation ADC, to understand the process of digitizing an analog signal.
+
+- **Lab 09: Digital-to-Analog Conversion (DAC)**
+    - Design and simulate an R-2R ladder DAC to convert digital words back into analog voltage levels. Analyze its resolution and linearity.
+
+- **Lab 10: Basic Data Acquisition (DAQ) System**
+    - Integrate the sensor, signal conditioning, and ADC components into a complete, albeit simplified, data acquisition system. Use Octave to post-process the simulated digital output.
 
 Each lab includes objectives, theoretical background, experimental procedures, and analysis questions.
 

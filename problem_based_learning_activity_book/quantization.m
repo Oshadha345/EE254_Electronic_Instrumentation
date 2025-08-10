@@ -1,9 +1,12 @@
+clear all;
+close all;
+clc
 
 [x,Fs] = audioread('danith.wav');
 
 X=x(:,1);
 
-N =3;
+N = 1;
 
 L = 2^N;
 
@@ -15,9 +18,10 @@ n = floor((X-Xmin)/q) - (L/2);
 
 Xq = ((2*n+1)*q)/2;
 
+qe = Xq - X;
+
 plot(x,'b');
 hold on;
 
 stairs(Xq,'r');
-
 

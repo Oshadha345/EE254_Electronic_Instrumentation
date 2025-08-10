@@ -2,16 +2,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
-# Signal parameters
-f0 = 5  # signal freq in Hz
-T = 1  # duration in seconds
-t_cont = np.linspace(0, T, 10000)  # fine time grid
-x_cont = np.sin(2 * np.pi * f0 * t_cont)
+# Original signal
+def signal(t):
+    return np.sin(3*t) + 0.5 * np.cos(5*t)
 
-# Sampling frequencies to test
-fs_list = np.linspace(2 * f0 + 1, 20 * f0, 40)  # avoid exact Nyquist
+# Sampling points
+t_start, t_end = 0, 2 * np.pi
+n_samples = 20
+t_samples = np.linspace(t_start, t_end, n_samples)
+y_samples = signal(t_samples)
 
-# Define Lagrange interpolation
+# Fine grid for "original" signal plot
+t_fine = np.linspace(t_start, t_end, 1000)
+y_fine = signal(t_fine)
+
+# 1. Zero-order hold
+def zero_order_hold(t_query, t_samples, y_samples):
+    idx = np.searchsorted(t_samples, t_query, side='right') - 1
+    idx[idx < 0] = 0
+    return y_samples[idx]
+
+# 2. Linear interpolation using scipy interp1d
+linear_interp = interp1d(t_samples, y_samples, kind='linear', fill_value="extrapolate")
+
+# 3. Lagrange interpolation
 def lagrange_interp(x, x_points, y_points):
     total = 0
     n = len(x_points)
@@ -24,7 +38,7 @@ def lagrange_interp(x, x_points, y_points):
         total += yi * Li
     return total
 
-# Newton interpolation helpers
+# 4. Newton interpolation
 def divided_diff(x_points, y_points):
     n = len(x_points)
     coef = np.copy(y_points).astype(float)
@@ -39,107 +53,49 @@ def newton_poly(coef, x_points, x):
         result = result * (x - x_points[k]) + coef[k]
     return result
 
-# For MSE tracking
-mse_zoh = []
-mse_li = []
-mse_lagrange = []
-mse_newton = []
+coefficients = divided_diff(t_samples, y_samples)
 
-for fs in fs_list:
-    Ts = 1 / fs
-    t_samples = np.arange(0, T + Ts, Ts)
-    x_samples = np.sin(2 * np.pi * f0 * t_samples)
+# Calculate interpolated values on fine grid
+y_zoh = zero_order_hold(t_fine, t_samples, y_samples)
+y_linear = linear_interp(t_fine)
+y_lagrange = np.array([lagrange_interp(x, t_samples, y_samples) for x in t_fine])
+y_newton = np.array([newton_poly(coefficients, t_samples, x) for x in t_fine])
 
-    # ZOH reconstruction
-    indices = np.searchsorted(t_samples, t_cont, side='right') - 1
-    indices[indices < 0] = 0
-    x_zoh = x_samples[indices]
+# Plot all methods
+fig, axs = plt.subplots(2, 2, figsize=(14, 10), sharex=True, sharey=True)
 
-    # Linear interpolation
-    interp_func = interp1d(t_samples, x_samples, kind='linear', fill_value="extrapolate")
-    x_li = interp_func(t_cont)
+# ZOH
+axs[0, 0].plot(t_fine, y_fine, 'k-', label='Original Signal')
+axs[0, 0].step(t_fine, y_zoh, 'r-', where='post', label='Zero-Order Hold')
+axs[0, 0].scatter(t_samples, y_samples, color='blue')
+axs[0, 0].set_title('Zero-Order Hold')
+axs[0, 0].legend()
+axs[0, 0].grid(True)
 
-    # Lagrange interpolation
-    x_lag = np.array([lagrange_interp(x, t_samples, x_samples) for x in t_cont])
+# Linear Interpolation
+axs[0, 1].plot(t_fine, y_fine, 'k-', label='Original Signal')
+axs[0, 1].plot(t_fine, y_linear, 'g-', label='Linear Interpolation')
+axs[0, 1].scatter(t_samples, y_samples, color='blue')
+axs[0, 1].set_title('Linear Interpolation')
+axs[0, 1].legend()
+axs[0, 1].grid(True)
 
-    # Newton interpolation
-    coef = divided_diff(t_samples, x_samples)
-    x_newt = np.array([newton_poly(coef, t_samples, x) for x in t_cont])
+# Lagrange Interpolation
+axs[1, 0].plot(t_fine, y_fine, 'k-', label='Original Signal')
+axs[1, 0].plot(t_fine, y_lagrange, 'm-', label='Lagrange Interpolation')
+axs[1, 0].scatter(t_samples, y_samples, color='blue')
+axs[1, 0].set_title('Lagrange Interpolation')
+axs[1, 0].legend()
+axs[1, 0].grid(True)
 
-    # Compute MSE
-    mse_zoh.append(np.mean((x_cont - x_zoh)**2))
-    mse_li.append(np.mean((x_cont - x_li)**2))
-    mse_lagrange.append(np.mean((x_cont - x_lag)**2))
-    mse_newton.append(np.mean((x_cont - x_newt)**2))
+# Newton Interpolation
+axs[1, 1].plot(t_fine, y_fine, 'k-', label='Original Signal')
+axs[1, 1].plot(t_fine, y_newton, 'c-', label='Newton Interpolation')
+axs[1, 1].scatter(t_samples, y_samples, color='blue')
+axs[1, 1].set_title('Newton Interpolation')
+axs[1, 1].legend()
+axs[1, 1].grid(True)
 
-# Choose a fixed fs to plot reconstructions
-fs_fixed = 10  # Hz
-Ts_fixed = 1 / fs_fixed
-t_samples_fixed = np.arange(0, T + Ts_fixed, Ts_fixed)
-x_samples_fixed = np.sin(2 * np.pi * f0 * t_samples_fixed)
-
-# Reconstructions at fixed fs
-indices_fixed = np.searchsorted(t_samples_fixed, t_cont, side='right') - 1
-indices_fixed[indices_fixed < 0] = 0
-x_zoh_fixed = x_samples_fixed[indices_fixed]
-
-interp_func_fixed = interp1d(t_samples_fixed, x_samples_fixed, kind='linear', fill_value="extrapolate")
-x_li_fixed = interp_func_fixed(t_cont)
-
-x_lag_fixed = np.array([lagrange_interp(x, t_samples_fixed, x_samples_fixed) for x in t_cont])
-coef_fixed = divided_diff(t_samples_fixed, x_samples_fixed)
-x_newt_fixed = np.array([newton_poly(coef_fixed, t_samples_fixed, x) for x in t_cont])
-
-# Plotting
-fig, axs = plt.subplots(3, 2, figsize=(14, 12))
-axs = axs.flatten()
-
-# ZOH plot
-axs[0].plot(t_cont, x_cont, 'k-', label='Original')
-axs[0].step(t_cont, x_zoh_fixed, 'r-', where='post', label='ZOH')
-axs[0].scatter(t_samples_fixed, x_samples_fixed, color='blue')
-axs[0].set_title('Zero-Order Hold')
-axs[0].legend()
-axs[0].grid(True)
-
-# Linear interp plot
-axs[1].plot(t_cont, x_cont, 'k-', label='Original')
-axs[1].plot(t_cont, x_li_fixed, 'g-', label='Linear')
-axs[1].scatter(t_samples_fixed, x_samples_fixed, color='blue')
-axs[1].set_title('Linear Interpolation')
-axs[1].legend()
-axs[1].grid(True)
-
-# Lagrange plot
-axs[2].plot(t_cont, x_cont, 'k-', label='Original')
-axs[2].plot(t_cont, x_lag_fixed, 'm-', label='Lagrange')
-axs[2].scatter(t_samples_fixed, x_samples_fixed, color='blue')
-axs[2].set_title('Lagrange Interpolation')
-axs[2].legend()
-axs[2].grid(True)
-
-# Newton plot
-axs[3].plot(t_cont, x_cont, 'k-', label='Original')
-axs[3].plot(t_cont, x_newt_fixed, 'c-', label='Newton')
-axs[3].scatter(t_samples_fixed, x_samples_fixed, color='blue')
-axs[3].set_title('Newton Interpolation')
-axs[3].legend()
-axs[3].grid(True)
-
-# MSE plot (bottom-right)
-axs[4].plot(fs_list, mse_zoh, 'r-o', label='ZOH')
-axs[4].plot(fs_list, mse_li, 'g-o', label='Linear')
-axs[4].plot(fs_list, mse_lagrange, 'm-o', label='Lagrange')
-axs[4].plot(fs_list, mse_newton, 'c-o', label='Newton')
-axs[4].set_xlabel('Sampling Frequency (Hz)')
-axs[4].set_ylabel('Mean Square Error (MSE)')
-axs[4].set_title('MSE vs Sampling Frequency')
-axs[4].legend()
-axs[4].grid(True)
-
-# Hide the unused subplot (bottom-right corner)
-axs[5].axis('off')
-
-plt.tight_layout(rect=[0, 0, 1, 0.96])
-plt.suptitle('Interpolation Methods & MSE vs Sampling Frequency', fontsize=18)
+plt.suptitle('Interpolation Methods Comparison\nSignal: sin(3t) + 0.5cos(5t) with {} samples'.format(n_samples), fontsize=16)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.show()

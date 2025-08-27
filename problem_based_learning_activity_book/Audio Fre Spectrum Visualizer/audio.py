@@ -17,7 +17,7 @@ from PyQt5 import QtWidgets, QtCore
 import pyqtgraph as pg
 import soundfile as sf  # for robust audio file reading
 
-AUDIO_FILE = "log sweep.wav"   # <- change to your file
+AUDIO_FILE = r"S:\Semester 4\EE254 - Instrumentation\My Work\EE254_Electronic_Instrumentation\problem_based_learning_activity_book\Audio Fre Spectrum Visualizer\danith.wav"   # <- change to your file
 
 # Playback / analysis parameters
 BLOCKSIZE = 1024            # frames per callback (smaller -> lower latency)

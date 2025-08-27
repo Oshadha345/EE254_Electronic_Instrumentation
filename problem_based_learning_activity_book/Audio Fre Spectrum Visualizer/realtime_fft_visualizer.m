@@ -1,3 +1,4 @@
+
 % Read the whole audio file
 [y, Fs] = audioread('danith.wav');
 L = length(y);

@@ -1,4 +1,4 @@
-clear all; close all; clc;
+ clear all; close all; clc;
 
 % Read audio file
 [y, Fs] = audioread('danith.wav');
